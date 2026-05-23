@@ -1,0 +1,31 @@
+Hadoop is a powerful framework for distributed computing and big data processing.
+Hadoop enables the processing of large datasets across clusters of computers using simple programming models.
+The Hadoop ecosystem includes tools like HDFS, MapReduce, YARN, Hive, Pig, and HBase.
+
+MapReduce is a programming model used for processing and generating large datasets.
+The Map function processes key-value pairs to generate intermediate key-value pairs.
+The Reduce function merges all intermediate values associated with the same intermediate key.
+
+Big data refers to datasets that are too large or complex for traditional data processing applications.
+Hadoop was designed from the ground up to handle big data at scale.
+The framework divides large data sets into smaller chunks and distributes them across the cluster.
+
+Data processing with Hadoop involves storing data in HDFS and processing it with MapReduce.
+HDFS stands for Hadoop Distributed File System which stores data reliably across many machines.
+Each data block is replicated across multiple nodes to ensure fault tolerance and high availability.
+
+Word count is the classic Hello World example in Hadoop and MapReduce programming.
+The word count program demonstrates the core concepts of the MapReduce programming paradigm.
+Every developer learning Hadoop starts with the word count example to understand distributed processing.
+
+Hadoop clusters can scale from a single server to thousands of machines each offering local computation and storage.
+The framework automatically handles failures at the application layer delivering a highly available service on top of a cluster of computers.
+Hadoop uses commodity hardware which makes it a cost-effective solution for big data processing.
+
+Open source software plays a huge role in big data and cloud computing today.
+Hadoop is open source software maintained by the Apache Software Foundation.
+The Apache Hadoop project develops open-source software for reliable scalable distributed computing.
+
+Data science and machine learning often use Hadoop for preprocessing and storing large training datasets.
+Companies like Yahoo Google Facebook and LinkedIn have used Hadoop to manage petabytes of data.
+The future of big data processing involves combining Hadoop with tools like Spark and Kafka for real-time analytics.
