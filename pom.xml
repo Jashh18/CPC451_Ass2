@@ -12,7 +12,6 @@
     <packaging>jar</packaging>
 
     <name>Hadoop Word Count</name>
-    <description>MapReduce Word Count implementation for Assignment 2</description>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -21,34 +20,23 @@
     </properties>
 
     <dependencies>
-        <!-- Hadoop Common -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>${hadoop.version}</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- Hadoop MapReduce Client Core -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-core</artifactId>
             <version>${hadoop.version}</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- Hadoop MapReduce Client JobClient -->
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-            <version>${hadoop.version}</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <build>
+        <sourceDirectory>src</sourceDirectory>
         <plugins>
-            <!-- Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -58,8 +46,6 @@
                     <target>8</target>
                 </configuration>
             </plugin>
-
-            <!-- Shade Plugin: bundles everything into one fat JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -82,5 +68,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

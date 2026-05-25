@@ -1,3 +1,3 @@
-/home/tunteja/hadoop-wordcount/src/main/java/com/wordcount/WordCountMapper.java
-/home/tunteja/hadoop-wordcount/src/main/java/com/wordcount/WordCountReducer.java
-/home/tunteja/hadoop-wordcount/src/main/java/com/wordcount/WordCountDriver.java
+/home/tunteja/hadoop-wordcount/src/WordCountReducer.java
+/home/tunteja/hadoop-wordcount/src/WordCountDriver.java
+/home/tunteja/hadoop-wordcount/src/WordCountMapper.java
