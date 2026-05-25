@@ -1,5 +1,5 @@
 # Hadoop MapReduce Word Count — Assignment 2
-## Complete Setup Guide (Ubuntu / Linux)
+## Interactive Terminal-Based Word Count Program
 
 ---
 
@@ -7,166 +7,215 @@
 
 ```
 hadoop-wordcount/
-├── src/main/java/com/wordcount/
-│   ├── WordCountMapper.java    ← Tokenizes text, emits (word, 1)
-│   ├── WordCountReducer.java   ← Sums counts per word
-│   └── WordCountDriver.java    ← Configures and submits the job
+├── src/
+│   ├── WordCountMapper.java     ← Tokenizes input text, emits (word, 1)
+│   ├── WordCountReducer.java    ← Sums counts per word
+│   └── WordCountDriver.java     ← Interactive file chooser + runs job
 ├── input/
-│   └── sample.txt              ← Dataset (edit this freely)
-├── demo-website/
-│   └── index.html              ← Open this in a browser for demo
-└── pom.xml                     ← Maven build file
+│   ├── sample1.txt              ← First dataset
+│   └── sample2.txt              ← Second dataset
+├── pom.xml                      ← Maven build file
+└── README.md                    ← This file
 ```
 
 ---
 
-## Step-by-Step Setup
-
-### 1. Install Prerequisites
+## Quick Start (One Command Setup)
 
 ```bash
-sudo apt update && sudo apt install -y openjdk-11-jdk maven ssh pdsh
-java -version   # should show openjdk 11
-mvn -version    # should show Apache Maven 3.x
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/hadoop-wordcount.git
+cd hadoop-wordcount
+
+# Run the complete setup script
+chmod +x setup.sh
+./setup.sh
 ```
 
-### 2. Download & Install Hadoop
+---
+
+## Step-by-Step Setup Guide
+
+### Prerequisites
+
+| Software  | Version | Installation Command                              |
+|-----------|---------|---------------------------------------------------|
+| Java JDK  | 11+     | `sudo apt update && sudo apt install -y openjdk-11-jdk` |
+| Maven     | 3.x     | `sudo apt install -y maven`                       |
+| Hadoop    | 3.3.6   | See Hadoop Installation section below             |
+
+---
+
+### 1. Clone the Repository
 
 ```bash
+# Clone from GitHub
+git clone https://github.com/YOUR_USERNAME/hadoop-wordcount.git
+cd hadoop-wordcount
+
+# Or if using local files
+cd /home/tunteja/hadoop-wordcount
+```
+
+---
+
+### 2. Install Hadoop (Pseudo-Distributed Mode)
+
+```bash
+# Download Hadoop
 cd ~
 wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
 tar -xzf hadoop-3.3.6.tar.gz
 sudo mv hadoop-3.3.6 /opt/hadoop
-```
 
-### 3. Set Environment Variables
-
-Add these to `~/.bashrc`:
-
-```bash
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-export HADOOP_HOME=/opt/hadoop
-export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
-```
-
-Then reload:
-```bash
+# Set environment variables
+echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> ~/.bashrc
+echo 'export HADOOP_HOME=/opt/hadoop' >> ~/.bashrc
+echo 'export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### 4. Configure Hadoop (Pseudo-Distributed Mode)
+---
 
-**Edit `/opt/hadoop/etc/hadoop/core-site.xml`:**
-```xml
+### 3. Configure Hadoop
+
+Create the required configuration files:
+
+```bash
+# core-site.xml
+sudo tee /opt/hadoop/etc/hadoop/core-site.xml > /dev/null << 'EOF'
 <configuration>
   <property>
     <name>fs.defaultFS</name>
     <value>hdfs://localhost:9000</value>
   </property>
 </configuration>
-```
+EOF
 
-**Edit `/opt/hadoop/etc/hadoop/hdfs-site.xml`:**
-```xml
+# hdfs-site.xml
+sudo tee /opt/hadoop/etc/hadoop/hdfs-site.xml > /dev/null << 'EOF'
 <configuration>
   <property>
     <name>dfs.replication</name>
     <value>1</value>
   </property>
 </configuration>
-```
+EOF
 
-**Edit `/opt/hadoop/etc/hadoop/mapred-site.xml`:**
-```xml
+# mapred-site.xml
+sudo tee /opt/hadoop/etc/hadoop/mapred-site.xml > /dev/null << 'EOF'
 <configuration>
   <property>
     <name>mapreduce.framework.name</name>
     <value>yarn</value>
   </property>
 </configuration>
-```
+EOF
 
-**Edit `/opt/hadoop/etc/hadoop/yarn-site.xml`:**
-```xml
+# yarn-site.xml
+sudo tee /opt/hadoop/etc/hadoop/yarn-site.xml > /dev/null << 'EOF'
 <configuration>
   <property>
     <name>yarn.nodemanager.aux-services</name>
     <value>mapreduce_shuffle</value>
   </property>
 </configuration>
+EOF
 ```
 
-### 5. Setup SSH (required by Hadoop)
+---
+
+### 4. Setup SSH (Required for Hadoop)
 
 ```bash
+# Generate SSH key
 ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 chmod 0600 ~/.ssh/authorized_keys
-ssh localhost   # should connect without password
+
+# Test SSH connection
+ssh localhost  # Should connect without password
 ```
 
-### 6. Format HDFS & Start Services
+---
+
+### 5. Start Hadoop Services
 
 ```bash
+# Format HDFS (only first time)
 hdfs namenode -format
+
+# Start HDFS and YARN
 start-dfs.sh
 start-yarn.sh
-jps   # verify: NameNode, DataNode, ResourceManager, NodeManager
-```
 
-Web UIs (open in browser):
-- HDFS: http://localhost:9870
-- YARN: http://localhost:8088
-
-### 7. Build the JAR
-
-```bash
-cd ~/hadoop-wordcount
-mvn clean package -DskipTests
-# Creates: target/wordcount-1.0.jar
-```
-
-### 8. Upload Input & Run
-
-```bash
-# Create HDFS directories
-hdfs dfs -mkdir -p /user/$USER/input
-
-# Upload the dataset
-hdfs dfs -put input/sample.txt /user/$USER/input/
-
-# Run the MapReduce job
-hadoop jar target/wordcount-1.0.jar \
-  com.wordcount.WordCountDriver \
-  /user/$USER/input/sample.txt \
-  /user/$USER/output
-
-# View results
-hdfs dfs -cat /user/$USER/output/part-r-00000
-```
-
-### 9. Re-running the job
-
-Delete the output directory first (Hadoop won't overwrite):
-```bash
-hdfs dfs -rm -r /user/$USER/output
-hadoop jar target/wordcount-1.0.jar com.wordcount.WordCountDriver /user/$USER/input/sample.txt /user/$USER/output
+# Verify services are running
+jps
+# Expected output: NameNode, DataNode, ResourceManager, NodeManager
 ```
 
 ---
 
-## Key Optimisations Implemented
+### 6. Prepare HDFS with Input Files
 
-| Optimisation | Where | Effect |
-|---|---|---|
-| **Combiner** | Driver.java | Reduces shuffle data dramatically |
-| **Object reuse** | Mapper.java | Cuts GC pressure on large datasets |
-| **Text normalisation** | Mapper.java | Accurate counts across case/punctuation |
-| **Replication=1** | hdfs-site.xml | OK for single node (use 3 on real cluster) |
+```bash
+# Create input directory in HDFS
+hdfs dfs -mkdir -p /input
+
+# Upload sample files to HDFS
+hdfs dfs -put input/sample1.txt /input/
+hdfs dfs -put input/sample2.txt /input/
+
+# Verify files are uploaded
+hdfs dfs -ls /input/
+```
 
 ---
 
-## Demo Website
+### 7. Build the JAR File
 
-Open `demo-website/index.html` in any browser — no server needed.
-It simulates the full MapReduce pipeline interactively with custom text input.
+```bash
+cd /home/tunteja/hadoop-wordcount
+
+# Clean and build using Maven
+mvn clean package
+
+# Verify JAR was created
+ls -la target/wordcount-1.0.jar
+```
+
+---
+
+### 8. Run the WordCount Program
+
+```bash
+# Run the interactive program
+hadoop jar target/wordcount-1.0.jar com.wordcount.WordCountDriver
+```
+
+---
+
+## How to Use the Interactive Program
+
+Once you run the program, you'll see:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║     📊  HADOOP WORD COUNT MAPREDUCE PROGRAM  📊             ║
+║         Assignment 2 - Distributed Word Counting           ║
+╚══════════════════════════════════════════════════════════════╝
+
+📁 Available text files in HDFS (/input):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. sample1.txt                    [2.45 KB]
+  2. sample2.txt                    [1.12 KB]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👉 Choose a file (1-2):
+```
+
+Follow these steps:
+
+1. **Choose a file** — Type `1` or `2` and press Enter
+2. **Watch MapReduce progress** — The job will show map/reduce progress (0% → 100%)
+3. **View results** — Word counts are displayed in a formatted table
