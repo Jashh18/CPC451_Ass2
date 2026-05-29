@@ -8,6 +8,7 @@
 ```
 hadoop-wordcount/
 ├── src/
+│   ├── run_wordcount.sh
 │   ├── WordCountMapper.java     ← Tokenizes input text, emits (word, 1)
 │   ├── WordCountReducer.java    ← Sums counts per word
 │   └── WordCountDriver.java     ← Interactive file chooser + runs job
@@ -20,49 +21,43 @@ hadoop-wordcount/
 
 ---
 
-## Quick Start (One Command Setup)
-
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/hadoop-wordcount.git
-cd hadoop-wordcount
-
-# Run the complete setup script
-chmod +x setup.sh
-./setup.sh
-```
-
----
-
-## Step-by-Step Setup Guide
-
-### Prerequisites
-
-| Software  | Version | Installation Command                              |
-|-----------|---------|---------------------------------------------------|
-| Java JDK  | 11+     | `sudo apt update && sudo apt install -y openjdk-11-jdk` |
-| Maven     | 3.x     | `sudo apt install -y maven`                       |
-| Hadoop    | 3.3.6   | See Hadoop Installation section below             |
-
----
+## Quick Start
 
 ### 1. Clone the Repository
 
 ```bash
-# Clone from GitHub
-git clone https://github.com/YOUR_USERNAME/hadoop-wordcount.git
+git clone https://github.com/Jashh18/CPC451_Ass2.git
 cd hadoop-wordcount
-
-# Or if using local files
-cd /home/tunteja/hadoop-wordcount
 ```
 
 ---
 
-### 2. Install Hadoop (Pseudo-Distributed Mode)
+### 2. Prerequisites
+
+Make sure the following are installed before proceeding:
+
+| Software | Version | Installation Command                                    |
+|----------|---------|---------------------------------------------------------|
+| Java JDK | 11+     | `sudo apt update && sudo apt install -y openjdk-11-jdk` |
+| Maven    | 3.x     | `sudo apt install -y maven`                             |
+| Hadoop   | 3.3.6   | See Hadoop Installation section below                   |
+
+Verify installations:
 
 ```bash
-# Download Hadoop
+java -version
+mvn -version
+hadoop version
+```
+
+---
+
+## Full Setup Guide
+
+### Step 1 — Install Hadoop (Pseudo-Distributed Mode)
+
+```bash
+# Download and extract Hadoop
 cd ~
 wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
 tar -xzf hadoop-3.3.6.tar.gz
@@ -77,9 +72,7 @@ source ~/.bashrc
 
 ---
 
-### 3. Configure Hadoop
-
-Create the required configuration files:
+### Step 2 — Configure Hadoop
 
 ```bash
 # core-site.xml
@@ -125,97 +118,160 @@ EOF
 
 ---
 
-### 4. Setup SSH (Required for Hadoop)
+### Step 3 — Setup SSH (Required for Hadoop)
 
 ```bash
-# Generate SSH key
 ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 chmod 0600 ~/.ssh/authorized_keys
 
-# Test SSH connection
-ssh localhost  # Should connect without password
+# Test — should connect without a password prompt
+ssh localhost
 ```
 
 ---
 
-### 5. Start Hadoop Services
+### Step 4 — Format and Start Hadoop
 
 ```bash
-# Format HDFS (only first time)
+# Format HDFS (first time only — do NOT repeat this step)
 hdfs namenode -format
 
-# Start HDFS and YARN
+# Start services
 start-dfs.sh
 start-yarn.sh
 
-# Verify services are running
+# Verify all 4 services are running
 jps
-# Expected output: NameNode, DataNode, ResourceManager, NodeManager
+```
+
+Expected `jps` output:
+
+```
+NameNode
+DataNode
+ResourceManager
+NodeManager
 ```
 
 ---
 
-### 6. Prepare HDFS with Input Files
+### Step 5 — Upload Input Files to HDFS
 
 ```bash
-# Create input directory in HDFS
+# Create input directory
 hdfs dfs -mkdir -p /input
 
-# Upload sample files to HDFS
+# Upload sample files
 hdfs dfs -put input/sample1.txt /input/
 hdfs dfs -put input/sample2.txt /input/
 
-# Verify files are uploaded
+# Confirm upload
 hdfs dfs -ls /input/
 ```
 
 ---
 
-### 7. Build the JAR File
+### Step 6 — Build the JAR
 
 ```bash
-cd /home/tunteja/hadoop-wordcount
-
-# Clean and build using Maven
+cd hadoop-wordcount
 mvn clean package
 
-# Verify JAR was created
+# Verify the JAR was created
 ls -la target/wordcount-1.0.jar
 ```
 
 ---
 
-### 8. Run the WordCount Program
+### Step 7 — Run the Program
+
+**Option A — Using the runner script (recommended):**
 
 ```bash
-# Run the interactive program
+chmod +x src/run_wordcount.sh
+./src/run_wordcount.sh
+```
+
+**Option B — Running directly with Hadoop:**
+
+```bash
 hadoop jar target/wordcount-1.0.jar com.wordcount.WordCountDriver
 ```
 
 ---
 
-## How to Use the Interactive Program
+## Expected Output
 
-Once you run the program, you'll see:
+After running, the program walks through each MapReduce phase interactively:
 
 ```
-╔══════════════════════════════════════════════════════════════╗
-║     📊  HADOOP WORD COUNT MAPREDUCE PROGRAM  📊             ║
-║         Assignment 2 - Distributed Word Counting           ║
-╚══════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════════╗
+║     📊  HADOOP MAPREDUCE WORD COUNT - FLOW VISUALIZATION  📊            ║
+║         Assignment 2 - Distributed Word Counting                         ║
+╚══════════════════════════════════════════════════════════════════════════╝
 
-📁 Available text files in HDFS (/input):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  1. sample1.txt                    [2.45 KB]
-  2. sample2.txt                    [1.12 KB]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📁 CHOOSE INPUT METHOD:
+────────────────────────────────────────────────────────────────────────────
+  1) sample1.txt (2.45 KB)
+  2) sample2.txt (1.12 KB)
 
-👉 Choose a file (1-2):
+👉 Enter choice (1-2): 1
+
+📥 STEP 1: INPUT PHASE
+🗺️  STEP 2: MAP PHASE
+🔄 STEP 3: SHUFFLE & SORT PHASE
+🔀 STEP 4: REDUCE PHASE
+
+📊 WORD COUNT RESULTS
+═══════════════════════════════════════════════════════════════════════════
+WORD                           │ COUNT
+───────────────────────────────────────────────────────────────────────────
+the                            │ 14
+hadoop                         │ 9
+...
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                         JOB EXECUTION SUMMARY                            ║
+╚══════════════════════════════════════════════════════════════════════════╝
+  ⏱️  Total execution time: 20.27 seconds
+  🗺️  Map tasks completed:    1
+  🔀 Reduce tasks completed: 1
 ```
 
-Follow these steps:
+---
 
-1. **Choose a file** — Type `1` or `2` and press Enter
-2. **Watch MapReduce progress** — The job will show map/reduce progress (0% → 100%)
-3. **View results** — Word counts are displayed in a formatted table
+## Troubleshooting
+
+**Hadoop services not starting:**
+```bash
+# Check if SSH works without a password
+ssh localhost
+
+# Re-format HDFS only if it has never been started before
+hdfs namenode -format
+start-dfs.sh && start-yarn.sh
+```
+
+**`Connection refused` on port 9000:**
+```bash
+# Make sure NameNode is running
+jps | grep NameNode
+
+# If missing, start HDFS again
+start-dfs.sh
+```
+
+**`Output directory already exists` error:**
+```bash
+# The program uses timestamped temp directories automatically.
+# If you see this on manual runs, delete the old output first:
+hdfs dfs -rm -r /tmp/wordcount_output_*
+```
+
+**Maven build fails:**
+```bash
+# Ensure you are inside the project root
+cd hadoop-wordcount
+mvn clean package -e
+```
