@@ -1,4 +1,5 @@
 # Hadoop MapReduce Word Count — Assignment 2
+
 ## Interactive Terminal-Based Word Count Program
 
 ---
@@ -37,7 +38,7 @@ cd hadoop-wordcount
 Make sure the following are installed before proceeding:
 
 | Software | Version | Installation Command                                    |
-|----------|---------|---------------------------------------------------------|
+| -------- | ------- | ------------------------------------------------------- |
 | Java JDK | 11+     | `sudo apt update && sudo apt install -y openjdk-11-jdk` |
 | Maven    | 3.x     | `sudo apt install -y maven`                             |
 | Hadoop   | 3.3.6   | See Hadoop Installation section below                   |
@@ -206,37 +207,99 @@ hadoop jar target/wordcount-1.0.jar com.wordcount.WordCountDriver
 After running, the program walks through each MapReduce phase interactively:
 
 ```
-╔══════════════════════════════════════════════════════════════════════════╗
-║     📊  HADOOP MAPREDUCE WORD COUNT - FLOW VISUALIZATION  📊            ║
-║         Assignment 2 - Distributed Word Counting                         ║
-╚══════════════════════════════════════════════════════════════════════════╝
+===========================================================
+     HADOOP MAPREDUCE WORD COUNT
+===========================================================
 
-📁 CHOOSE INPUT METHOD:
-────────────────────────────────────────────────────────────────────────────
-  1) sample1.txt (2.45 KB)
-  2) sample2.txt (1.12 KB)
+Available input files:
+-----------------------------------------------------------
+  1) sample1.txt (2.27 KB)
+  2) sample2.txt (0.74 KB)
 
-👉 Enter choice (1-2): 1
+Enter choice (1-2): 1
 
-📥 STEP 1: INPUT PHASE
-🗺️  STEP 2: MAP PHASE
-🔄 STEP 3: SHUFFLE & SORT PHASE
-🔀 STEP 4: REDUCE PHASE
+Selected: sample1.txt
 
-📊 WORD COUNT RESULTS
-═══════════════════════════════════════════════════════════════════════════
-WORD                           │ COUNT
-───────────────────────────────────────────────────────────────────────────
-the                            │ 14
-hadoop                         │ 9
+File Details:
+-----------------------------------------------------------
+  Name: sample1.txt
+  Size: 2.27 KB
+  HDFS Path: hdfs://localhost:9000/input/sample1.txt
+
+-----------------------------------------------------------
+MAPREDUCE PIPELINE EXECUTION
+-----------------------------------------------------------
+
+[STEP 1] INPUT PHASE
+-----------------------------------------------------------
+  Input file: sample1.txt
+  Lines: 31
+  Size: 2.27 KB
+  Status: Uploaded to HDFS
+
+[STEP 2] MAP PHASE
+-----------------------------------------------------------
+  Splitting input into chunks...
+  Tokenizing lines into words...
+  Normalizing text (lowercase + punctuation removal)...
+  Emitting (word, 1) pairs...
+  Map input records: 31
+  Map output records: 341
+  Combine input records: 341
+  Combine output records: 177 (optimized)
+
+[STEP 3] SHUFFLE AND SORT PHASE
+-----------------------------------------------------------
+  Transferring data from mappers to reducers...
+  Grouping by key (word)...
+  Sorting alphabetically...
+  Status: Complete
+
+[STEP 4] REDUCE PHASE
+-----------------------------------------------------------
+  Summing counts for each unique word...
+  Writing final output to HDFS...
+  Status: Complete
+
+WORD COUNT RESULTS
+===========================================================
+WORD                      | COUNT
+-----------------------------------------------------------
+a                         | 7
+across                    | 4
+and                       | 13
+big                       | 6
+data                      | 14
+hadoop                    | 15
+processing                | 9
+the                       | 18
 ...
+===========================================================
 
-╔══════════════════════════════════════════════════════════════════════════╗
-║                         JOB EXECUTION SUMMARY                            ║
-╚══════════════════════════════════════════════════════════════════════════╝
-  ⏱️  Total execution time: 20.27 seconds
-  🗺️  Map tasks completed:    1
-  🔀 Reduce tasks completed: 1
+SUMMARY STATISTICS:
+-----------------------------------------------------------
+  Total unique words: 177
+  Total word occurrences: 341
+
+TOP 10 MOST FREQUENT WORDS:
+-----------------------------------------------------------
+  1. the                  : 18
+  2. hadoop               : 15
+  3. data                 : 14
+  4. and                  : 13
+  5. processing           : 9
+  6. for                  : 8
+  7. of                   : 8
+  8. a                    : 7
+  9. to                   : 7
+  10. big                 : 6
+
+JOB EXECUTION SUMMARY
+===========================================================
+  Total execution time: 16.33 seconds
+  Map tasks completed: 1
+  Reduce tasks completed: 1
+===========================================================
 ```
 
 ---
@@ -244,6 +307,7 @@ hadoop                         │ 9
 ## Troubleshooting
 
 **Hadoop services not starting:**
+
 ```bash
 # Check if SSH works without a password
 ssh localhost
@@ -254,6 +318,7 @@ start-dfs.sh && start-yarn.sh
 ```
 
 **`Connection refused` on port 9000:**
+
 ```bash
 # Make sure NameNode is running
 jps | grep NameNode
@@ -263,6 +328,7 @@ start-dfs.sh
 ```
 
 **`Output directory already exists` error:**
+
 ```bash
 # The program uses timestamped temp directories automatically.
 # If you see this on manual runs, delete the old output first:
@@ -270,6 +336,7 @@ hdfs dfs -rm -r /tmp/wordcount_output_*
 ```
 
 **Maven build fails:**
+
 ```bash
 # Ensure you are inside the project root
 cd hadoop-wordcount
